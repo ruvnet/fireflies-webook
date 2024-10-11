@@ -20,3 +20,38 @@ def detect_intents(transcript: str) -> List[Tuple[str, float]]:
         if confidence > 0:
             detected_intents.append((intent, confidence))
     return sorted(detected_intents, key=lambda x: x[1], reverse=True)
+from typing import List, Tuple
+import openai
+from app.config import settings
+
+openai.api_key = settings.openai_api_key
+
+INTENTS = [
+    "follow-up", "proposal", "SOW", "coding", "technical specification",
+    "functional specification", "documentation", "project management",
+    "product features", "tool selection"
+]
+
+def detect_intents(transcript: str) -> List[Tuple[str, float]]:
+    prompt = f"Analyze the following transcript and identify the most relevant intents from this list: {', '.join(INTENTS)}. Return the intents and their confidence scores.\n\nTranscript: {transcript}"
+    
+    response = openai.Completion.create(
+        engine="gpt-4o-mini",
+        prompt=prompt,
+        max_tokens=100,
+        n=1,
+        stop=None,
+        temperature=0.5,
+    )
+
+    # Parse the response and extract intents with confidence scores
+    result = response.choices[0].text.strip().split("\n")
+    intents = []
+    for line in result:
+        parts = line.split(":")
+        if len(parts) == 2:
+            intent = parts[0].strip()
+            confidence = float(parts[1].strip())
+            intents.append((intent, confidence))
+
+    return intents

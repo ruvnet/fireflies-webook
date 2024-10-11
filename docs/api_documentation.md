@@ -128,3 +128,52 @@ curl -X POST "http://your-server-address/api/webhook" \
 ## Support
 
 For additional support or to report issues, please contact our support team or open an issue on our GitHub repository.
+# API Documentation
+
+## Webhook Endpoint
+
+**URL**: `/api/webhook`
+**Method**: `POST`
+
+### Request Body
+
+```json
+{
+  "meeting_id": "string",
+  "event_type": "string"
+}
+```
+
+### Response
+
+```json
+{
+  "meeting_id": "string",
+  "intents": [
+    {
+      "intent": "string",
+      "confidence": "float"
+    }
+  ],
+  "outputs": [
+    {
+      "intent": "string",
+      "output": "string"
+    }
+  ]
+}
+```
+
+### Error Responses
+
+- `400 Bad Request`: Invalid input data
+- `401 Unauthorized`: Invalid or missing API key
+- `500 Internal Server Error`: Server-side error
+
+## Authentication
+
+Include your API key in the `Authorization` header of each request:
+
+```
+Authorization: Bearer YOUR_API_KEY
+```

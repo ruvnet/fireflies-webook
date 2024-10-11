@@ -51,3 +51,10 @@ print_message "🚀" "Launching aider..."
 aider README.md init-prompt.md start.md --yes-always --message-file commands.md
 
 print_message "🎉" "Script execution completed!"
+#!/bin/bash
+
+# Activate the virtual environment
+poetry shell
+
+# Start the FastAPI server
+uvicorn app.main:app --reload

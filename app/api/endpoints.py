@@ -60,3 +60,46 @@ async def webhook_endpoint(payload: WebhookPayload, background_tasks: Background
     except Exception as e:
         logger.error(f"Error initiating webhook process: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
+from fastapi import APIRouter, Depends, HTTPException
+from sqlalchemy.orm import Session
+from app.database import get_db
+from app.schemas import WebhookRequest, WebhookResponse
+from app.services import fireflies, intent_detector, openai
+from app.models import WebhookRequest as DBWebhookRequest, Transcript, DetectedIntent, OpenAIOutput
+
+router = APIRouter()
+
+@router.post("/webhook", response_model=WebhookResponse)
+async def webhook(request: WebhookRequest, db: Session = Depends(get_db)):
+    # Save webhook request
+    db_request = DBWebhookRequest(meeting_id=request.meeting_id, event_type=request.event_type)
+    db.add(db_request)
+    db.commit()
+
+    # Get transcript
+    transcript = await fireflies.get_transcript(request.meeting_id)
+    db_transcript = Transcript(meeting_id=request.meeting_id, content=transcript)
+    db.add(db_transcript)
+    db.commit()
+
+    # Detect intents
+    intents = intent_detector.detect_intents(transcript)
+    db_intents = [DetectedIntent(meeting_id=request.meeting_id, intent=intent, confidence=confidence)
+                  for intent, confidence in intents]
+    db.add_all(db_intents)
+    db.commit()
+
+    # Generate OpenAI outputs
+    outputs = []
+    for intent, _ in intents:
+        output = await openai.process_intent(intent, transcript)
+        db_output = OpenAIOutput(meeting_id=request.meeting_id, intent=intent, output=str(output))
+        db.add(db_output)
+        outputs.append(OpenAIResponse(intent=intent, output=str(output)))
+    db.commit()
+
+    return WebhookResponse(
+        meeting_id=request.meeting_id,
+        intents=[IntentResponse(intent=intent, confidence=confidence) for intent, confidence in intents],
+        outputs=outputs
+    )

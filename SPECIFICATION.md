@@ -99,3 +99,70 @@ As this is primarily a backend service, there is no direct user interface. Howev
 - Provide examples for API requests and responses
 - Use consistent formatting and structure
 - Implement proper error messages and status codes
+# Fireflies Webhook Specification
+
+## Functional Requirements
+
+1. Webhook Endpoint:
+   - Receive POST requests from Fireflies
+   - Authenticate incoming requests
+   - Query Fireflies API for transcripts
+   - Handle errors, retries, and timeouts
+
+2. Intent Detection:
+   - Process transcripts to detect intents
+   - Use OpenAI for intent detection
+   - Implement a dictionary of intents for matching
+
+3. Action Execution:
+   - Execute actions based on detected intents
+   - Use OpenAI for structured output generation
+   - Support various output formats based on intent
+
+4. Data Storage:
+   - Save webhook requests, transcripts, intents, and outputs in SQLite database
+   - Implement database migrations
+
+## Non-Functional Requirements
+
+1. Security:
+   - Implement API key authentication
+   - Store credentials securely in .env file
+
+2. Performance:
+   - Handle concurrent requests efficiently
+   - Optimize database queries
+
+3. Scalability:
+   - Design for potential future growth
+   - Allow easy addition of new intents and actions
+
+4. Maintainability:
+   - Use clear code structure and documentation
+   - Implement logging for monitoring and debugging
+
+## Technology Stack
+
+- Python 3.9+
+- FastAPI
+- Pydantic
+- SQLAlchemy
+- LiteLLM
+- GPT-4o-mini (via OpenAI)
+- Poetry for dependency management
+
+## User Scenarios
+
+1. Fireflies sends a webhook request with a meeting ID
+2. System retrieves transcript from Fireflies API
+3. System detects intents in the transcript
+4. System generates structured output based on intents
+5. System stores all data and responds to the webhook request
+
+## UI/UX Guidelines
+
+As this is an API-based system, there is no direct user interface. However, the API responses should be:
+
+- Clear and consistent in format
+- Well-documented for ease of integration
+- Provide meaningful error messages

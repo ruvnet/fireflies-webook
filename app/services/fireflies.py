@@ -29,3 +29,16 @@ async def get_transcript(meeting_id: str) -> str:
         except Exception as e:
             logger.error(f"Unexpected error occurred while fetching transcript: {str(e)}")
             raise
+import httpx
+from app.config import settings
+
+async def get_transcript(meeting_id: str) -> str:
+    async with httpx.AsyncClient() as client:
+        response = await client.get(
+            f"https://api.fireflies.ai/graphql",
+            headers={"Authorization": f"Bearer {settings.fireflies_api_key}"},
+            params={"query": f"query {{ transcript(id: \"{meeting_id}\") {{ text }} }}"}
+        )
+        response.raise_for_status()
+        data = response.json()
+        return data["data"]["transcript"]["text"]

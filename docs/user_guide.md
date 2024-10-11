@@ -72,3 +72,63 @@ pytest
 ## Support
 
 For additional support or to report issues, please open an issue on the GitHub repository.
+# User Guide
+
+## Getting Started
+
+1. Ensure you have set up your environment variables in the `.env` file.
+2. Start the server using the `start.sh` script.
+
+## Sending Webhook Requests
+
+To process a transcript, send a POST request to the `/api/webhook` endpoint with the following JSON payload:
+
+```json
+{
+  "meeting_id": "your_meeting_id",
+  "event_type": "transcription_complete"
+}
+```
+
+Replace `your_meeting_id` with the actual meeting ID from Fireflies.
+
+## Interpreting the Response
+
+The webhook will respond with detected intents and generated outputs:
+
+```json
+{
+  "meeting_id": "your_meeting_id",
+  "intents": [
+    {
+      "intent": "follow-up",
+      "confidence": 0.85
+    },
+    {
+      "intent": "project management",
+      "confidence": 0.72
+    }
+  ],
+  "outputs": [
+    {
+      "intent": "follow-up",
+      "output": "Generated follow-up content..."
+    },
+    {
+      "intent": "project management",
+      "output": "Generated project management content..."
+    }
+  ]
+}
+```
+
+## Troubleshooting
+
+- If you encounter authentication errors, ensure your API key is correctly set in the `.env` file.
+- For other issues, check the `app.log` file for detailed error messages.
+
+## Extending the Application
+
+To add new intents or modify existing ones, edit the `INTENTS` list in `app/services/intent_detector.py`.
+
+To customize the OpenAI output generation, modify the `process_intent` function in `app/services/openai.py`.

@@ -10,23 +10,20 @@ This project implements a webhook endpoint for processing Fireflies transcripts,
    cd fireflies-webhook
    ```
 
-2. Install dependencies:
+2. Run the installation script:
    ```
-   poetry install
+   chmod +x install.sh
+   ./install.sh
    ```
 
 3. Set up environment variables:
    - Copy `.env.example` to `.env`
    - Fill in your Fireflies and OpenAI API keys
 
-4. Run database migrations:
+4. Start the server:
    ```
-   alembic upgrade head
-   ```
-
-5. Start the server:
-   ```
-   uvicorn app.main:app --reload
+   chmod +x start.sh
+   ./start.sh
    ```
 
 ## Usage
@@ -44,7 +41,7 @@ Send POST requests to `/api/webhook` with the following payload:
 
 - Add new intents in `app/services/intent_detector.py`
 - Extend OpenAI processing in `app/services/openai.py`
-- Run tests: `pytest`
+- Run tests: `poetry run pytest`
 
 ## Deployment
 
