@@ -1,3 +1,26 @@
+# Aider Auto-Builder Template
+
+Automatically build a custom application based on specification for less than $1.
+
+## Technical Requirements
+
+1. API Keys Required:
+   - OpenAI API key
+   - Fireflies.ai API key
+
+2. Setup:
+   - Create a file named `start.sh` in the project root directory
+   - Make the script executable by running:
+     ```
+     chmod +x start.sh
+     ```
+
+3. Execution:
+   - Run the application by executing:
+     ```
+     ./start.sh
+     ```
+ 
 Imagine having a smart assistant that listens to your conversations and automatically takes care of follow-up tasks for you. That's exactly what our application does!
 
 ### Here's how it works:
