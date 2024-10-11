@@ -48,6 +48,6 @@ fi
 
 # Execute aider command
 print_message "🚀" "Launching aider..."
-aider README.md init-prompt.md start.md --yes-always
+aider README.md init-prompt.md start.md --yes-always --message-file commands.md
 
 print_message "🎉" "Script execution completed!"
