@@ -1,6 +1,8 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
-from app.models import WebhookPayload, IntentResponse, OpenAIResponse
+from typing import List
+from app import models
+from app.schemas import WebhookPayload, IntentResponse, OpenAIResponse
 from app.services import fireflies, openai, intent_detector
 from app.database import get_db
 from app.utils.logger import logger
