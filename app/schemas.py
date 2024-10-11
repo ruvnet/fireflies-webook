@@ -1,4 +1,4 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import List, Dict
 
 class WebhookPayload(BaseModel):
@@ -14,5 +14,5 @@ class OpenAIResponse(BaseModel):
     output: Dict
 
 class WebhookResponse(BaseModel):
-    detected_intents: List[IntentResponse]
-    openai_outputs: List[OpenAIResponse]
+    detected_intents: List[IntentResponse] = Field(default_factory=list)
+    openai_outputs: List[OpenAIResponse] = Field(default_factory=list)

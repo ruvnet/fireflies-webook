@@ -1,23 +1,16 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
 from sqlalchemy.orm import Session
 from typing import List
 from app import models
-from app.schemas import WebhookPayload, IntentResponse, OpenAIResponse
+from app.schemas import WebhookPayload, WebhookResponse, IntentResponse, OpenAIResponse
 from app.services import fireflies, openai, intent_detector
 from app.database import get_db
 from app.utils.logger import logger
 
 router = APIRouter()
 
-@router.post("/webhook", response_model=List[OpenAIResponse])
-async def webhook_endpoint(payload: WebhookPayload, db: Session = Depends(get_db)):
+async def process_webhook(payload: WebhookPayload, db: Session):
     try:
-        # Log and save webhook request
-        logger.info(f"Received webhook for meeting: {payload.meeting_id}")
-        db_request = models.WebhookRequest(meeting_id=payload.meeting_id, payload=payload.dict())
-        db.add(db_request)
-        db.commit()
-
         # Fetch transcript from Fireflies API
         transcript = await fireflies.get_transcript(payload.meeting_id)
         db_transcript = models.Transcript(meeting_id=payload.meeting_id, content=transcript)
@@ -26,9 +19,11 @@ async def webhook_endpoint(payload: WebhookPayload, db: Session = Depends(get_db
 
         # Detect intents
         detected_intents = intent_detector.detect_intents(transcript)
+        intent_responses = []
         for intent, confidence in detected_intents:
             db_intent = models.DetectedIntent(meeting_id=payload.meeting_id, intent=intent, confidence=confidence)
             db.add(db_intent)
+            intent_responses.append(IntentResponse(intent=intent, confidence=confidence))
         db.commit()
 
         # Process with OpenAI for each detected intent
@@ -40,8 +35,28 @@ async def webhook_endpoint(payload: WebhookPayload, db: Session = Depends(get_db
             openai_responses.append(OpenAIResponse(intent=intent, output=openai_output))
         db.commit()
 
-        return openai_responses
+        logger.info(f"Webhook processing completed for meeting: {payload.meeting_id}")
+        return WebhookResponse(detected_intents=intent_responses, openai_outputs=openai_responses)
 
     except Exception as e:
         logger.error(f"Error processing webhook: {str(e)}")
+        db.rollback()
+        raise
+
+@router.post("/webhook", response_model=WebhookResponse)
+async def webhook_endpoint(payload: WebhookPayload, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
+    try:
+        # Log and save webhook request
+        logger.info(f"Received webhook for meeting: {payload.meeting_id}")
+        db_request = models.WebhookRequest(meeting_id=payload.meeting_id, payload=payload.dict())
+        db.add(db_request)
+        db.commit()
+
+        # Process webhook in the background
+        background_tasks.add_task(process_webhook, payload, db)
+
+        return WebhookResponse(detected_intents=[], openai_outputs=[])
+
+    except Exception as e:
+        logger.error(f"Error initiating webhook process: {str(e)}")
         raise HTTPException(status_code=500, detail="Internal server error")
