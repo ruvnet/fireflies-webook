@@ -1,3 +1,27 @@
+Imagine having a smart assistant that listens to your conversations and automatically takes care of follow-up tasks for you. That's exactly what our application does!
+
+### Here's how it works:
+
+1. **Listens and Understands**: Our app connects to your meeting transcripts from Fireflies.ai.
+
+2. **Detects Intentions**: It figures out what needs to be done based on what was discussed in the meeting.
+
+3. **Takes Action**: Without you lifting a finger, it can:
+   - Draft follow-up emails
+   - Create project outlines
+   - Generate code snippets
+   - Write technical specifications
+   - Set up task lists
+   - And much more!
+
+4. **Saves Time**: It handles routine tasks automatically, freeing you to focus on what really matters.
+
+5. **Never Misses a Beat**: Ensures important action items from your meetings don't fall through the cracks.
+
+Think of it as your personal assistant that attends every meeting with you, takes perfect notes, and starts working on action items before you even leave the room. It's like having a super-efficient team member who works 24/7, turning your conversations into concrete results.
+
+With our app, you'll boost productivity, reduce follow-up time, and ensure that every meeting leads to meaningful action – all without extra effort on your part. It's not just a tool; it's your ticket to more efficient, effective, and productive workdays!
+
 # Fireflies Webhook
 
 This specification provides a comprehensive structure for the webhook endpoint system, including intent detection, OpenAI integration, and database management. The modular design allows for easy extension and maintenance of the system.
