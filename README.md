@@ -87,7 +87,7 @@ graph TD
 2. **Open Cline**: Use `CMD/CTRL + Shift + P` and select "Cline: Open In New Tab".
 3. **Configure API Provider**: Link Cline to an API provider (e.g., OpenRouter) for optimal performance.
 4. **Set Project Context**: Set the project’s root directory to provide Cline access to relevant file structures and dependencies.
-
+5. Install demo ```curl -fsSL https://deno.land/x/install/install.sh | sh1 ```
 ---
 Here are some straightforward examples to help you start using Cline within the RUV Bounce Method, covering essential tasks from test-driven development to basic function implementation. These will help you get comfortable with setting up and running Cline multi-hop prompts for both mock tests and actual code.
 
