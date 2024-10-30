@@ -177,6 +177,9 @@ Deno.test({
       });
       setEnvVars(partialEnvVars);
 
+      // Set up mock fetch
+      globalThis.fetch = createMockFetch('valid');
+
       try {
         // Import handler after setting environment variables
         const { handler } = await import("./index.ts");
@@ -196,6 +199,8 @@ Deno.test({
       } finally {
         // Clean up
         clearEnvVars();
+        // Restore original fetch
+        globalThis.fetch = originalFetch;
       }
     });
   }
