@@ -1,268 +1,226 @@
-# Fireflies Webhook Handler
+# The RUV Bounce Method: A Comprehensive Guide
 
-## Edge Function Management via CLI
+Welcome to the tutorial on the RUV Bounce method, a framework designed to fully leverage AI in software development. With this approach, you’ll move through **Requirements Refinement**, **Unification of Architecture and AI**, and **Validation and Verification** with AI working alongside you as an extension of your own capabilities.
 
-### Basic Commands
+This method goes beyond mere AI integration—it embodies AI-native development, where AI plays an integral role in both development and runtime processes. Let’s dive deep into each stage, with practical steps and examples to illustrate the approach.
 
-```bash
-# List all deployed functions
-npx supabase functions list
+---
 
-# Get URL for a specific function
-npx supabase functions url webhook-handler
+## Table of Contents
 
-# Delete a function
-npx supabase functions delete webhook-handler
+1. [Overview of the RUV Bounce Method](#overview)
+2. [Requirements Refinement (R)](#requirements-refinement-r)
+    - Writing Tests First
+    - Examples
+3. [Unification of Architecture and AI (U)](#unification-of-architecture-and-ai-u)
+    - Integrating AI into Architecture
+    - Examples
+4. [Validation and Verification (V)](#validation-and-verification-v)
+    - Continuous Testing and Verification
+    - Examples
+5. [Using AI Agents and Cline for Development](#using-ai-agents-and-cline-for-development)
+6. [Common Commands](#common-commands)
+7. [Best Practices](#best-practices)
+8. [Summary](#summary)
 
-# Deploy a function
-# Deploy a function
-npx supabase functions deploy webhook-handler --no-verify-jwt
+---
 
-# Delete a function
-npx supabase functions delete webhook-handler
+## Overview of the RUV Bounce Method
 
-# Download a deployed function
-npx supabase functions download webhook-handler
+The RUV Bounce Method combines three critical phases:
 
-# Create a new function
-npx supabase functions new my-new-function
+1. **Requirements Refinement (R)**: Establish detailed project goals through test-driven development, defining the entire scope of functionality upfront.
+2. **Unification of Architecture and AI (U)**: Build AI into the architecture at all levels, creating an adaptable and intelligent system.
+3. **Validation and Verification (V)**: Implement a process to verify each output, ensuring quality and consistency.
+
+Each phase follows a **test-first approach**, emphasizing AI’s role in writing, refining, and verifying code. This tutorial will cover each phase, including examples and practical steps to get started.
+
+---
+
+## Requirements Refinement (R)
+
+Requirements Refinement is the first stage of the RUV Bounce Method, and it begins with test-driven development. In this phase, we define every requirement through test cases rather than code, allowing us to focus on **what** the project should accomplish rather than **how** it should be implemented.
+
+### Steps for Requirements Refinement
+
+1. **Define Requirements as Tests**: List each feature as a test case to clarify requirements.
+2. **Structure Test Cases**: Build tests that act as specifications.
+3. **Adjust Requirements**: Refine requirements based on initial test feedback.
+4. **Use Cline to Assist with Test Cases**: Leverage AI to draft, refine, and improve test cases.
+
+### Example: Writing Tests First
+
+Below is a sample test setup using **Deno** for a webhook handler that processes meeting transcripts.
+
+```typescript
+// test.ts - Writing tests first
+Deno.test({
+  name: "Webhook Handler Tests",
+  async fn(t) {
+    await t.step("should process valid webhook payload", async () => {
+      // Define requirements as test cases
+      const response = await handler(req);
+      assertEquals(response.status, 200);
+      assertExists(data.intents);
+    });
+  }
+});
 ```
 
-### Serving Functions Locally
-```bash
-# Serve all functions
-npx supabase functions serve
+In this example, we’re defining requirements through test cases that check for key outcomes. This approach ensures that every feature is aligned with project objectives.
 
-# Serve specific function
-npx supabase functions serve webhook-handler
+---
 
-# Serve with environment variables
-npx supabase functions serve webhook-handler --env-file .env
+## Unification of Architecture and AI (U)
+
+In the **Unification of Architecture and AI** stage, AI is built into the architecture itself. This integration isn’t an afterthought—it’s a fundamental component that enhances the system’s functionality, adaptability, and intelligence.
+
+### Steps for Unifying Architecture and AI
+
+1. **Identify Core AI Tasks**: Determine areas where AI can provide ongoing value.
+2. **Integrate AI Modules**: Add AI functionalities as core modules within the architecture.
+3. **Align Architecture with AI Processes**: Ensure the system’s structure supports and enhances AI capabilities.
+4. **Use Cline for Suggestions and Code Generation**: Ask Cline to assist with module design and optimization.
+
+### Example: AI Integration in Runtime
+
+Let’s see an example where OpenAI’s model is integrated to process meeting transcripts:
+
+```typescript
+// index.ts - Runtime AI integration
+async function detectIntents(transcript: Transcript): Promise<Intent[]> {
+  // OpenAI processes meeting transcripts
+  const response = await fetch(config.openai.apiUrl, {
+    method: 'POST',
+    body: JSON.stringify({
+      model: config.openai.model,
+      messages: [
+        {
+          role: 'system',
+          content: `Analyze the meeting transcript for intents...`
+        }
+      ]
+    })
+  });
+}
 ```
 
-### Debugging Functions
+This function enables **real-time AI processing** of meeting transcripts, making it part of the runtime rather than a separate module.
+
+---
+
+## Validation and Verification (V)
+
+The final phase is **Validation and Verification**, where we continuously verify that outputs meet project standards. This stage combines automated testing, deployment checks, and runtime validation to ensure consistency and quality.
+
+### Steps for Validation and Verification
+
+1. **Automated Testing**: Run tests at each development stage to catch issues early.
+2. **Deployment Verification**: Confirm successful deployment with checks and diagnostics.
+3. **Runtime Monitoring**: Use AI agents to monitor and adapt the system in real-time.
+4. **Involve Cline for Debugging**: Cline can aid in identifying, diagnosing, and resolving issues.
+
+### Example: Automated Deployment and Verification
+
+Below is an example of an automated deployment process with validation steps:
+
 ```bash
-# View function logs
-npx supabase functions logs webhook-handler
-
-# View logs with debug info
-FIREFLIES_API_KEY=your_fireflies_api_key
-OPENAI_API_KEY=your_openai_api_key
-
-# Supabase Project Details
-SUPABASE_URL=your_supabase_project_url
-SUPABASE_PROJECT_REF=your_project_ref
-
-# Supabase Keys/Tokens
-SUPABASE_ACCESS_TOKEN=your_access_token        # For CLI operations
-SUPABASE_ANON_KEY=your_anon_public_key        # For client-side
-SUPABASE_SERVICE_ROLE_KEY=your_service_role    # For server-side
-SUPABASE_JWT_SECRET=your_jwt_secret           # For auth verification
+# Automated deployment and verification
+./setup.sh
+# Option 5 runs:
+# 1. Test suite
+# 2. Deployment
+# 3. Environment verification
+# 4. Endpoint testing
 ```
 
-If any variable is missing, the setup script will prompt you to enter it.
+By automating the verification process, you ensure that each deployment is consistent, reliable, and ready for production use.
 
-### Running the Setup
+---
 
-1. Make the setup script executable:
-   ```bash
-   chmod +x setup.sh
-   ```
+## Using AI Agents and Cline for Development
 
-2. Run the setup CLI:
-   ```bash
-   ./setup.sh
-   ```
+Cline, an AI development partner, plays a critical role in the RUV Bounce Method. Here’s how to effectively leverage Cline at each stage.
 
-3. Choose from the following options in the interactive menu:
-   ```
-   ===============================================
-   Fireflies Webhook Handler - Setup and Deployment
-   ===============================================
-   1. Install Prerequisites (Deno)
-   2. Configure Environment Variables
-   3. Setup Database
-   4. Run Tests
-   5. Deploy Function
-   6. Full Setup (Steps 1-5)
-   7. View Logs
-   8. Show Webhook URL
-   9. Exit
-   ===============================================
-   ```
-
-### Automated Setup (Recommended)
-
-1. Choose option 6 for full automated setup:
-   - Installs prerequisites (Deno)
-   - Loads or prompts for environment variables
-   - Sets up the database using `npx supabase`
-   - Runs tests
-   - Deploys the function
-   - Displays the webhook URL
-
-2. After deployment, the CLI will display the webhook URL and configuration instructions:
-   ```
-   =================================================================
-   Fireflies Webhook Configuration Instructions
-   =================================================================
-   1. Go to Fireflies Dashboard: https://app.fireflies.ai/settings
-   2. Navigate to Developer settings
-   3. Add this Webhook URL: https://your-project.functions.supabase.co/webhook-handler
-   4. Save the settings
-
-   This webhook will be notified when:
-   - Transcription Completed (Triggered when transcription is completed)
-   =================================================================
-   ```
-
-### Manual Supabase Commands
-
-If you need to run Supabase commands manually:
+### Test-First Development with Cline
 
 ```bash
-# Set access token for CLI operations
-export SUPABASE_ACCESS_TOKEN=your_access_token
+# Ask Cline to write tests first
+"Create test cases for handling rate limiting in test.ts"
 
-# Link project
-npx supabase link --project-ref your-project-ref
+# Then implement the functionality based on tests
+"Implement rate limiting based on the test cases"
+```
+
+### Code Review and Improvement with Cline
+
+```bash
+# Have Cline review implementations
+"Review the intent detection logic for edge cases"
+
+# Get suggestions for improvements
+"Suggest optimizations for the webhook handler"
+```
+
+### Deployment Verification with Cline
+
+```bash
+# Use Cline to verify deployments
+"Check the deployment script output for issues"
+
+# Debug problems with Cline
+"Debug the environment variable configuration"
+```
+
+By working with Cline throughout the development process, you can catch issues early, optimize code, and streamline deployment, making it an indispensable part of the RUV Bounce Method.
+
+---
+
+## Common Commands
+
+Below are some essential commands for working within this framework:
+
+```bash
+# Run tests
+deno test --allow-all
 
 # Deploy function
-npx supabase functions deploy webhook-handler --no-verify-jwt
-
-# Set environment variables (using service role for backend operations)
-npx supabase secrets set \
-  FIREFLIES_API_KEY=your-key \
-  OPENAI_API_KEY=your-key \
-  SUPABASE_SERVICE_ROLE_KEY=your-service-role-key
+./setup.sh
+# Select option 5
 
 # View logs
-npx supabase functions logs webhook-handler
+# Select option 7
 
-# Get function URL
-npx supabase functions url webhook-handler
+# Get webhook URL
+# Select option 8
 ```
 
-### Viewing Webhook URL
+---
 
-At any time, you can:
-1. Run `./setup.sh`
-2. Choose option 8 to display:
-   - Webhook URL
-   - Fireflies configuration instructions
-   - Test command
+## Best Practices
 
-### Monitoring
+### Test-First Development
+1. **Write tests first** in `test.ts`.
+2. **Mock external services** to isolate functionality.
+3. **Implement functionality** in `index.ts` based on the test cases.
+4. **Verify** with the full test suite.
 
-1. View Logs (Option 7):
-   - Shows function execution logs using `npx supabase functions logs`
-   - Helps with monitoring and debugging
+### Using Cline for Development
+- Let Cline analyze existing tests before making changes.
+- Have Cline verify environment variable handling.
+- Use Cline to review deployment scripts.
+- Test changes locally before deployment to avoid production issues.
 
-2. Test the webhook:
-   ```bash
-   curl -X POST https://your-project.functions.supabase.co/webhook-handler \
-     -H 'Content-Type: application/json' \
-     -d '{
-       "meetingId": "your-meeting-id",
-       "eventType": "Transcription completed"
-     }'
-   ```
+### Deployment Workflow
+1. **Configure environment variables** with care.
+2. **Run the test suite** as part of pre-deployment.
+3. **Deploy the function** only after successful testing.
+4. **Verify webhook endpoint** post-deployment to confirm functionality.
 
-## Features
+---
 
-- Receives webhook notifications from Fireflies.ai
-- Fetches complete transcript data using Fireflies GraphQL API
-- Detects intents in meeting transcripts using OpenAI GPT-4
-- Stores processed data in Supabase database
-- Handles errors and retries gracefully
-- CORS-enabled for cross-origin requests
+## Summary
 
-## Troubleshooting
+The RUV Bounce Method is more than just an AI integration—it’s an AI-native development approach that prioritizes efficiency, quality, and adaptability. By focusing on **Requirements Refinement**, **Unification of Architecture and AI**, and **Validation and Verification**, you’re equipping yourself with a structured yet flexible framework that makes AI a true development partner.
 
-### Common Issues
-
-1. Missing Supabase credentials:
-   ```bash
-   # Get your credentials from Supabase dashboard:
-   # - Access Token: Account > Access Tokens
-   # - Anon Key: Project Settings > API > anon public
-   # - Service Role: Project Settings > API > service_role secret
-   # - JWT Secret: Project Settings > API > JWT Settings
-   
-   ./setup.sh
-   # Choose option 2 to configure
-   ```
-
-2. Environment variables not loaded:
-   ```bash
-   # Check .env file exists and has all required variables
-   cat .env
-   # If missing, run setup
-   ./setup.sh
-   # Choose option 2
-   ```
-
-3. Database issues:
-   ```bash
-   # Ensure SUPABASE_ACCESS_TOKEN and SUPABASE_SERVICE_ROLE_KEY are set
-   echo $SUPABASE_ACCESS_TOKEN
-   echo $SUPABASE_SERVICE_ROLE_KEY
-   # Then run setup
-   ./setup.sh
-   # Choose option 3
-   ```
-
-4. Deployment problems:
-   ```bash
-   ./setup.sh
-   # Choose option 7 to view logs
-   ```
-
-### Verification Steps
-
-1. Check environment:
-   ```bash
-   # Verify variables are set
-   cat .env
-   ```
-
-2. Test Supabase access:
-   ```bash
-   # Test CLI access
-   SUPABASE_ACCESS_TOKEN=your_token npx supabase projects list
-
-   # Test API access
-   curl -X GET \
-     -H "apikey: your_anon_key" \
-     -H "Authorization: Bearer your_service_role_key" \
-     "https://your-project.supabase.co/rest/v1/"
-   ```
-
-3. Verify webhook URL:
-   ```bash
-   ./setup.sh
-   # Choose option 8
-   ```
-
-## Security
-
-- JWT verification is disabled to allow Fireflies.ai webhooks
-- API keys are stored securely as environment variables
-- Database access is controlled via RLS policies
-- CORS is configured for specific origins
-- Service role key used for backend operations
-- Anon key used for client-side operations
-
-## Support
-
-For issues and feature requests:
-1. Check the [issues page](https://github.com/yourusername/fireflies-webhook/issues)
-2. Create a new issue with:
-   - Clear description
-   - Steps to reproduce
-   - Environment details
-   - Expected vs actual behavior
-
-## License
-
-MIT License - see LICENSE file for details
+This approach will fundamentally reshape your workflow, enabling you to deliver high-quality software quickly, efficiently, and with minimal manual intervention.
