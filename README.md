@@ -106,6 +106,7 @@ Make sure each test checks the response status and verifies error handling for m
 
 # Step 2: Run the Mock Test
 "Run the test cases in webhook-handler/test.ts and display the results, ensuring both cases execute as expected."
+# Continue until there are no errors. 
 ```
 
 ---
@@ -126,6 +127,7 @@ Use basic inputs to verify that the function can handle both expected and edge c
 
 # Step 3: Run and Verify
 "Run the mock tests in test.ts to ensure that the function handles valid and invalid transcripts appropriately. Refine error handling if any test case fails."
+# Continue until there are no errors. 
 ```
 
 ---
@@ -143,6 +145,7 @@ Ensure each test reads from .env.test and config.toml."
 
 # Step 2: Run Environment Tests
 "Run the environment configuration tests in webhook-handler/test.ts, and display results. Adjust configurations if any environment variables are missing or incorrectly set."
+# Continue until there are no errors.
 ```
 
 ---
@@ -160,6 +163,8 @@ This should confirm that the schema matches expectations and constraints are enf
 
 # Step 2: Validate Schema in Mock Test
 "Run the test for meeting_data migration in supabase/migrations and report results. Ensure that all schema and constraints match requirements."
+
+# Continue until there are no errors. 
 ```
 
 ---
@@ -180,6 +185,8 @@ Ensure all steps verify responses and confirm data integrity in the meeting_data
 
 # Step 3: Run and Refine Tests
 "Run the end-to-end tests in webhook-handler/test.ts and verify the complete workflow from input to database. Refine any parts of the function that fail, ensuring a smooth end-to-end flow."
+
+# Continue until there are no errors. 
 ```
 
 ---
@@ -211,6 +218,7 @@ Write the function modularly, allowing each validation step to be isolated and t
 
 # Step 3: Execute and Refine the Mock Tests
 "Run the tests in supabase/functions/webhook-handler/test.ts to validate webhook-handler/index.ts. Identify any failing cases, particularly around edge cases, and refine the function’s error handling and validation logic to pass all tests."
+# Continue until there are no errors. 
 ```
 
 ---
@@ -236,6 +244,7 @@ Add comments explaining how each constraint enforces schema integrity and potent
 
 # Step 3: Validate Schema Constraints with Mock Test Execution
 "Run all schema validation tests to confirm that meeting_data in supabase/migrations works as intended. If any constraint violations arise, provide detailed reasoning for each adjustment and its impact on overall data integrity."
+# Continue until there are no errors. 
 ```
 
 ---
@@ -260,6 +269,7 @@ Break down each logical step within the function, ensuring modularity to handle 
 
 # Step 3: Test and Refine AI Interaction in the Mock Environment
 "Run the intent detection tests in test.ts. Evaluate how the AI model handles various inputs, adjusting the function to improve handling for low-confidence cases or ambiguous results. Refine the logic so that all intents are either confidently identified or explicitly marked as undetected."
+# Continue until there are no errors. 
 ```
 
 ---
@@ -284,6 +294,8 @@ Test this logic with .env.test and config.toml, verifying that all configuration
 
 # Step 3: Execute Integration Tests Across Different Environments
 "Run integration tests in webhook-handler/test.ts across multiple environments (.env.test and production). Verify that the system behaves as expected in each environment, focusing on the accuracy of environment-specific configurations. Ensure that all environment-based logic is functioning consistently."
+
+# Continue until there are no errors. 
 ```
 
 ---
@@ -310,6 +322,7 @@ Use reasoning to describe how security checks integrate with each function step,
 
 # Step 3: Validate Security Layers and Refine Error Handling
 "Run security tests in webhook-handler/test.ts. Evaluate any failed cases and refine error messages to be descriptive but not expose sensitive information. Adjust authorization checks to ensure that only necessary data is accessible per user role."
+# Continue until there are no errors. 
 ```
 
 ---
