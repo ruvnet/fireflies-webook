@@ -1,0 +1,16 @@
+project_id = "ozatqjrwquuusibmfern"
+
+[api]
+port = 54321
+schemas = ["public", "storage"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
+[db]
+port = 54322
+shadow_port = 54320
+major_version = 15
+
+[functions]
+[functions.webhook-handler]
+verify_jwt = false
