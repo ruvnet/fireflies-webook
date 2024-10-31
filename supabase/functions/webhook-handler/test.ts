@@ -44,7 +44,7 @@ const MOCK_OPENAI_RESPONSE = {
       message: {
         content: JSON.stringify([
           {
-            type: "TECH_SPEC",
+            type: "technical-specification",
             confidence: 0.9,
             details: {
               quotes: ["Let's discuss the technical requirements for the new feature."],
@@ -251,7 +251,7 @@ Deno.test({
         assertEquals(data.meeting_id, MOCK_WEBHOOK_PAYLOAD.meetingId);
         assertExists(data.intents);
         assertEquals(data.intents.length, 1);
-        assertEquals(data.intents[0].type, "TECH_SPEC");
+        assertEquals(data.intents[0].type, "technical-specification");
         assertEquals(data.intents[0].confidence, 0.9);
       } finally {
         // Restore original fetch
