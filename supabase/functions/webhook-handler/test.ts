@@ -1,4 +1,5 @@
 import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testing/asserts.ts";
+import { load } from "https://deno.land/std@0.208.0/dotenv/mod.ts";
 
 // Mock data for testing
 const MOCK_WEBHOOK_PAYLOAD = {
@@ -112,7 +113,10 @@ const createMockFetch = (transcriptType: 'valid' | 'empty') => {
         transcriptType === 'valid' ? MOCK_TRANSCRIPT_RESPONSE : MOCK_EMPTY_TRANSCRIPT_RESPONSE
       ), {
         status: 200,
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 
+          'Content-Type': 'application/json',
+          'Access-Control-Allow-Origin': '*'
+        }
       });
     }
     if (url.includes('openai.com')) {
@@ -133,14 +137,29 @@ const createMockFetch = (transcriptType: 'valid' | 'empty') => {
   };
 };
 
-// Store original fetch for cleanup
+// Store original fetch and env for cleanup
 const originalFetch = globalThis.fetch;
+const originalEnv = { ...Deno.env.toObject() };
+
+// Helper to reset everything between tests
+const resetTestEnv = () => {
+  // Reset fetch
+  globalThis.fetch = originalFetch;
+  
+  // Reset env vars
+  clearEnvVars();
+  for (const [key, value] of Object.entries(originalEnv)) {
+    Deno.env.set(key, value);
+  }
+};
 
 // Test suite for environment configuration
 Deno.test({
   name: "Environment Configuration Tests",
   async fn(t) {
-    await t.step("should validate all required environment variables are present", async () => {
+    await t.step({
+      name: "should validate all required environment variables are present",
+      fn: async () => {
       // Set all required environment variables
       setEnvVars(ENV_VARS);
 
@@ -157,10 +176,13 @@ Deno.test({
       assertEquals(response.status, 200);
 
       // Clean up
-      clearEnvVars();
+      resetTestEnv();
+      }
     });
 
-    await t.step("should throw error when environment variables are missing", async () => {
+    await t.step({
+      name: "should throw error when environment variables are missing",
+      fn: async () => {
       // Set only some variables, omitting FF_API_KEY
       const partialEnvVars: Record<string, string> = {};
       Object.entries(ENV_VARS).forEach(([key, value]) => {
@@ -187,7 +209,8 @@ Deno.test({
       assertEquals(data.message, "Missing required environment variable: FF_API_KEY");
 
       // Clean up
-      clearEnvVars();
+      resetTestEnv();
+      }
     });
   }
 });
