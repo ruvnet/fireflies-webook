@@ -1,4 +1,4 @@
-import { assertEquals, assertExists, assertRejects } from "https://deno.land/std@0.168.0/testing/asserts.ts";
+import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testing/asserts.ts";
 
 // Mock data for testing
 const MOCK_WEBHOOK_PAYLOAD = {
