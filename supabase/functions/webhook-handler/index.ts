@@ -115,10 +115,22 @@ async function fetchTranscript(meetingId: string): Promise<Transcript> {
 }
 
 async function detectIntents(transcript: Transcript): Promise<Intent[]> {
+  // Handle empty transcript
+  if (!transcript.sentences || transcript.sentences.length === 0) {
+    console.log('Empty transcript detected, returning no intents');
+    return [];
+  }
+
   // Prepare transcript text for analysis
   const transcriptText = transcript.sentences
     .map(s => `${s.speaker}: ${s.text}`)
     .join('\n');
+
+  // If transcript text is empty after processing, return no intents
+  if (!transcriptText.trim()) {
+    console.log('No valid text content in transcript, returning no intents');
+    return [];
+  }
 
   const response = await fetch(config.openai.apiUrl, {
     method: 'POST',
@@ -139,7 +151,8 @@ async function detectIntents(transcript: Transcript): Promise<Intent[]> {
             2. A confidence score (0-1)
             3. Supporting details including relevant quotes and context
             
-            Return the results as a JSON array of objects with 'type', 'confidence', and 'details'.`
+            Return the results as a JSON array of objects with 'type', 'confidence', and 'details'.
+            If no clear intents are detected, return an empty array.`
         },
         {
           role: 'user',
@@ -156,7 +169,18 @@ async function detectIntents(transcript: Transcript): Promise<Intent[]> {
   }
 
   const result = await response.json();
-  return JSON.parse(result.choices[0].message.content);
+  const intents = JSON.parse(result.choices[0].message.content);
+
+  // Validate intents structure and filter out low confidence scores
+  return intents.filter((intent: Intent) => {
+    return (
+      typeof intent.type === 'string' &&
+      typeof intent.confidence === 'number' &&
+      intent.confidence >= 0.5 && // Filter out low confidence intents
+      intent.details &&
+      Object.prototype.hasOwnProperty.call(INTENT_TYPES, intent.type.toUpperCase().replace(/-/g, '_'))
+    );
+  });
 }
 
 async function storeData(data: {
