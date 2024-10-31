@@ -213,8 +213,6 @@ export async function handler(req: Request): Promise<Response> {
   try {
     validateConfig();
 
-  try {
-
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
       return new Response(null, {
