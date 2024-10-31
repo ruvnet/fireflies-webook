@@ -210,34 +210,8 @@ async function storeData(data: {
 
 // Main webhook handler
 export async function handler(req: Request): Promise<Response> {
-  // Validate configuration first, before any other operations
-  if (!config.fireflies.apiKey) {
-    return new Response(JSON.stringify({
-      success: false,
-      message: 'Missing required environment variable: FF_API_KEY'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  }
-
   try {
     validateConfig();
-  } catch (error) {
-    return new Response(JSON.stringify({
-      success: false,
-      message: error instanceof Error ? error.message : 'Configuration error'
-    }), {
-      status: 500,
-      headers: {
-        'Content-Type': 'application/json',
-        'Access-Control-Allow-Origin': '*',
-      },
-    });
-  }
 
   try {
 
