@@ -144,27 +144,20 @@ Deno.test({
       // Set all required environment variables
       setEnvVars(ENV_VARS);
 
-      // Set up mock fetch
-      globalThis.fetch = createMockFetch('valid');
+      // Import handler after setting environment variables
+      const { handler } = await import("./index.ts");
 
-      try {
-        // Import handler after setting environment variables
-        const { handler } = await import("./index.ts");
+      const req = new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
+      });
 
-        const req = new Request("http://localhost", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
-        });
+      const response = await handler(req);
+      assertEquals(response.status, 200);
 
-        const response = await handler(req);
-        assertEquals(response.status, 200);
-      } finally {
-        // Restore original fetch
-        globalThis.fetch = originalFetch;
-        // Clean up
-        clearEnvVars();
-      }
+      // Clean up
+      clearEnvVars();
     });
 
     await t.step("should throw error when environment variables are missing", async () => {
@@ -177,31 +170,24 @@ Deno.test({
       });
       setEnvVars(partialEnvVars);
 
-      // Set up mock fetch
-      globalThis.fetch = createMockFetch('valid');
+      // Import handler after setting environment variables
+      const { handler } = await import("./index.ts");
 
-      try {
-        // Import handler after setting environment variables
-        const { handler } = await import("./index.ts");
+      const req = new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
+      });
 
-        const req = new Request("http://localhost", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
-        });
+      const response = await handler(req);
+      assertEquals(response.status, 500);
 
-        const response = await handler(req);
-        assertEquals(response.status, 500);
+      const data = await response.json();
+      assertEquals(data.success, false);
+      assertEquals(data.message, "Missing required environment variable: FF_API_KEY");
 
-        const data = await response.json();
-        assertEquals(data.success, false);
-        assertEquals(data.message, "Missing required environment variables: FF_API_KEY");
-      } finally {
-        // Clean up
-        clearEnvVars();
-        // Restore original fetch
-        globalThis.fetch = originalFetch;
-      }
+      // Clean up
+      clearEnvVars();
     });
   }
 });
