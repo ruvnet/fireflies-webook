@@ -70,8 +70,8 @@ function validateConfig(): void {
 
   const missing = required.filter(([_, value]) => !value);
   if (missing.length > 0) {
-    const missingVars = missing.map(([name]) => name).join(", ");
-    throw new Error(`Missing required environment variables: ${missingVars}`);
+    const missingVar = missing[0][0]; // Get first missing variable
+    throw new Error(`Missing required environment variable: ${missingVar}`);
   }
 }
 
@@ -210,9 +210,23 @@ async function storeData(data: {
 
 // Main webhook handler
 export async function handler(req: Request): Promise<Response> {
+  // Validate configuration first, before any other operations
   try {
-    // Validate configuration
     validateConfig();
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: error instanceof Error ? error.message : 'Configuration error'
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
+
+  try {
 
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
