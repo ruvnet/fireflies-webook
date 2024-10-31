@@ -195,7 +195,7 @@ Deno.test({
 
         const data = await response.json();
         assertEquals(data.success, false);
-        assertEquals(data.message, "Missing required environment variable: FF_API_KEY");
+        assertEquals(data.message, "Missing required environment variables: FF_API_KEY");
       } finally {
         // Clean up
         clearEnvVars();

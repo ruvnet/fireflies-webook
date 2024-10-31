@@ -58,7 +58,7 @@ const config = {
 };
 
 // Validate environment variables
-function validateConfig() {
+function validateConfig(): void {
   const required = [
     ["FF_API_KEY", config.fireflies.apiKey],
     ["OPENAI_API_KEY", config.openai.apiKey],
@@ -68,10 +68,10 @@ function validateConfig() {
     ["FF_JWT_SECRET", config.supabase.jwtSecret],
   ];
 
-  for (const [name, value] of required) {
-    if (!value) {
-      throw new Error(`Missing required environment variable: ${name}`);
-    }
+  const missing = required.filter(([_, value]) => !value);
+  if (missing.length > 0) {
+    const missingVars = missing.map(([name]) => name).join(", ");
+    throw new Error(`Missing required environment variables: ${missingVars}`);
   }
 }
 
