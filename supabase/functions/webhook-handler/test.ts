@@ -3,27 +3,11 @@ import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testin
 // Set test environment flag before any imports
 Deno.env.set("DENO_TEST", "1");
 
-// Mock data for testing
+// Mock data for testing - matches Fireflies webhook format exactly
 const MOCK_WEBHOOK_PAYLOAD = {
-  meetingId: "test-meeting-id",
+  meetingId: "ASxwZxCstx",
   eventType: "Transcription completed",
-  clientReferenceId: "test-ref-123",
-  transcript: {
-    sentences: [
-      {
-        text: "Let's discuss the technical requirements for the new feature.",
-        speaker: "John",
-        startTime: 0,
-        endTime: 5
-      },
-      {
-        text: "We need to implement a new API endpoint and update the documentation.",
-        speaker: "Alice",
-        startTime: 6,
-        endTime: 10
-      }
-    ]
-  }
+  clientReferenceId: "be582c46-4ac9-4565-9ba6-6ab4264496a8"
 };
 
 // Helper to create a new module import for each test
@@ -58,7 +42,7 @@ Deno.test({
       assertEquals(response.status, 405);
     });
 
-    await t.step("should validate webhook payload", async () => {
+    await t.step("should validate webhook payload - missing fields", async () => {
       const req = new Request("http://localhost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -67,6 +51,27 @@ Deno.test({
 
       const response = await handler(req);
       assertEquals(response.status, 400);
+
+      const data = await response.json();
+      assertEquals(data.success, false);
+      assertEquals(data.message, "Invalid webhook payload: missing required fields");
+    });
+
+    await t.step("should validate webhook payload - missing eventType", async () => {
+      const req = new Request("http://localhost", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          meetingId: "ASxwZxCstx"
+        })
+      });
+
+      const response = await handler(req);
+      assertEquals(response.status, 400);
+
+      const data = await response.json();
+      assertEquals(data.success, false);
+      assertEquals(data.message, "Invalid webhook payload: missing required fields");
     });
 
     await t.step("should process valid webhook payload", async () => {
@@ -83,7 +88,8 @@ Deno.test({
       assertEquals(data.success, true);
       assertEquals(data.message, "Webhook received successfully");
       assertEquals(data.data.meetingId, MOCK_WEBHOOK_PAYLOAD.meetingId);
-      assertEquals(data.data.transcript.sentences.length, 2);
+      assertEquals(data.data.eventType, MOCK_WEBHOOK_PAYLOAD.eventType);
+      assertEquals(data.data.clientReferenceId, MOCK_WEBHOOK_PAYLOAD.clientReferenceId);
     });
 
     await t.step("should handle unsupported event types", async () => {

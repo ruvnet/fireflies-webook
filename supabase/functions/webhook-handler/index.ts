@@ -3,14 +3,6 @@ interface WebhookPayload {
   meetingId: string;
   eventType: string;
   clientReferenceId?: string;
-  transcript?: {
-    sentences: Array<{
-      text: string;
-      speaker: string;
-      startTime: number;
-      endTime: number;
-    }>;
-  };
 }
 
 // Main webhook handler
@@ -41,7 +33,7 @@ export async function handler(req: Request): Promise<Response> {
     if (!payload.meetingId || !payload.eventType) {
       return new Response(JSON.stringify({
         success: false,
-        message: 'Invalid webhook payload'
+        message: 'Invalid webhook payload: missing required fields'
       }), { 
         status: 400,
         headers: { 'Content-Type': 'application/json' },

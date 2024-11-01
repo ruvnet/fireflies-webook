@@ -36,18 +36,9 @@ echo "Testing deployment..."
 TEST_RESPONSE=$(curl -s -X POST "$WEBHOOK_URL" \
     -H 'Content-Type: application/json' \
     -d '{
-      "meetingId": "test-meeting-id",
+      "meetingId": "ASxwZxCstx",
       "eventType": "Transcription completed",
-      "transcript": {
-        "sentences": [
-          {
-            "text": "This is a test transcript",
-            "speaker": "Test Speaker",
-            "startTime": 0,
-            "endTime": 5
-          }
-        ]
-      }
+      "clientReferenceId": "be582c46-4ac9-4565-9ba6-6ab4264496a8"
     }')
 
 if [ $? -eq 0 ]; then
@@ -62,16 +53,7 @@ echo "To test the webhook, you can use curl:"
 echo "curl -X POST $WEBHOOK_URL \\"
 echo "  -H 'Content-Type: application/json' \\"
 echo '  -d '"'"'{
-    "meetingId": "your-meeting-id",
+    "meetingId": "ASxwZxCstx",
     "eventType": "Transcription completed",
-    "transcript": {
-      "sentences": [
-        {
-          "text": "Example transcript text",
-          "speaker": "Speaker Name",
-          "startTime": 0,
-          "endTime": 5
-        }
-      ]
-    }
+    "clientReferenceId": "be582c46-4ac9-4565-9ba6-6ab4264496a8"
   }'"'"
