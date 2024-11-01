@@ -80,9 +80,9 @@ load_env() {
     return 0
 }
 
-# Function to deploy function
-deploy_function() {
-    print_status "$YELLOW" "Deploying function..."
+# Function to deploy webhook handler
+deploy_webhook() {
+    print_status "$YELLOW" "Deploying webhook handler..."
     verify_prerequisites
     
     # Load environment variables first
@@ -102,7 +102,38 @@ deploy_function() {
     fi
     
     cd ../../..
-    print_status "$GREEN" "Function deployed successfully"
+    print_status "$GREEN" "Webhook handler deployed successfully"
+}
+
+# Function to deploy meeting info
+deploy_meeting_info() {
+    print_status "$YELLOW" "Deploying meeting info function..."
+    verify_prerequisites
+    
+    # Load environment variables first
+    if ! load_env; then
+        return 1
+    fi
+    
+    print_status "$GREEN" "Using project ref: $SUPABASE_PROJECT_REF"
+    
+    cd supabase/functions/meeting-info
+    
+    # Deploy the function
+    if ! ./deploy.sh; then
+        print_status "$RED" "Deployment failed"
+        cd ../../..
+        return 1
+    fi
+    
+    cd ../../..
+    print_status "$GREEN" "Meeting info function deployed successfully"
+}
+
+# Function to deploy all functions
+deploy_all_functions() {
+    deploy_webhook || return 1
+    deploy_meeting_info || return 1
 }
 
 # Function to install prerequisites
@@ -157,9 +188,9 @@ setup_database() {
     print_status "$GREEN" "Database setup completed"
 }
 
-# Function to run tests
-run_tests() {
-    print_status "$YELLOW" "Running tests..."
+# Function to run all tests
+run_all_tests() {
+    print_status "$YELLOW" "Running all tests..."
     verify_prerequisites
     
     # Load environment variables first
@@ -167,14 +198,25 @@ run_tests() {
         return 1
     fi
     
+    # Run webhook handler tests
     cd supabase/functions/webhook-handler
     if ! deno test --allow-all; then
-        print_status "$RED" "Tests failed"
+        print_status "$RED" "Webhook handler tests failed"
         cd ../../..
         return 1
     fi
     cd ../../..
-    print_status "$GREEN" "Tests completed successfully"
+    
+    # Run meeting info tests
+    cd supabase/functions/meeting-info
+    if ! deno test --allow-all; then
+        print_status "$RED" "Meeting info tests failed"
+        cd ../../..
+        return 1
+    fi
+    cd ../../..
+    
+    print_status "$GREEN" "All tests completed successfully"
 }
 
 # Function to perform full setup
@@ -182,13 +224,29 @@ full_setup() {
     install_prerequisites
     configure_env || return 1
     setup_database || return 1
-    run_tests || return 1
-    deploy_function || return 1
+    run_all_tests || return 1
+    deploy_all_functions || return 1
 }
 
-# Function to view logs
-view_logs() {
-    print_status "$YELLOW" "Viewing logs..."
+# Function to view logs for a specific function
+view_function_logs() {
+    print_status "$YELLOW" "Select function to view logs:"
+    echo "1. webhook-handler"
+    echo "2. meeting-info"
+    echo "3. Back to main menu"
+    read -p "Enter your choice (1-3): " log_choice
+    
+    case $log_choice in
+        1) npx supabase functions logs webhook-handler ;;
+        2) npx supabase functions logs meeting-info ;;
+        3) return ;;
+        *) print_status "$RED" "Invalid option" ;;
+    esac
+}
+
+# Function to show function URLs
+show_function_urls() {
+    print_status "$YELLOW" "Getting function URLs..."
     verify_prerequisites
     
     # Load environment variables first
@@ -197,21 +255,8 @@ view_logs() {
     fi
     
     print_status "$GREEN" "Using project ref: $SUPABASE_PROJECT_REF"
-    npx supabase functions logs webhook-handler
-}
-
-# Function to show webhook URL
-show_webhook_url() {
-    print_status "$YELLOW" "Getting webhook URL..."
-    verify_prerequisites
-    
-    # Load environment variables first
-    if ! load_env; then
-        return 1
-    fi
-    
-    print_status "$GREEN" "Using project ref: $SUPABASE_PROJECT_REF"
-    print_status "$GREEN" "Webhook URL: https://$SUPABASE_PROJECT_REF.functions.supabase.co/webhook-handler"
+    print_status "$GREEN" "Webhook Handler URL: https://$SUPABASE_PROJECT_REF.functions.supabase.co/webhook-handler"
+    print_status "$GREEN" "Meeting Info URL: https://$SUPABASE_PROJECT_REF.functions.supabase.co/meeting-info"
 }
 
 # Function to list functions and URLs
@@ -228,44 +273,73 @@ list_functions() {
     echo ""
     npx supabase functions list
     
-    # Show webhook URL
+    # Show function URLs
     print_status "$YELLOW" "\nFunction URLs:"
     print_status "$GREEN" "webhook-handler: https://$SUPABASE_PROJECT_REF.functions.supabase.co/webhook-handler"
+    print_status "$GREEN" "meeting-info: https://$SUPABASE_PROJECT_REF.functions.supabase.co/meeting-info"
 }
 
-# Make deploy.sh executable
+# Function deployment submenu
+function_deployment_menu() {
+    while true; do
+        echo "==============================================="
+        echo "Function Deployment Menu"
+        echo "==============================================="
+        echo "1. Deploy Webhook Handler"
+        echo "2. Deploy Meeting Info"
+        echo "3. Deploy All Functions"
+        echo "4. View Function Logs"
+        echo "5. Show Function URLs"
+        echo "6. List All Functions"
+        echo "7. Back to Main Menu"
+        echo "==============================================="
+        read -p "Enter your choice (1-7): " deploy_choice
+        echo ""
+        
+        case $deploy_choice in
+            1) deploy_webhook ;;
+            2) deploy_meeting_info ;;
+            3) deploy_all_functions ;;
+            4) view_function_logs ;;
+            5) show_function_urls ;;
+            6) list_functions ;;
+            7) return ;;
+            *) print_status "$RED" "Invalid option" ;;
+        esac
+        
+        echo ""
+        read -p "Press Enter to continue..."
+    done
+}
+
+# Make deploy scripts executable
 chmod +x supabase/functions/webhook-handler/deploy.sh
+chmod +x supabase/functions/meeting-info/deploy.sh
 
 # Main menu
 while true; do
     echo "==============================================="
-    echo "Fireflies Webhook Handler - Setup and Deployment"
+    echo "Fireflies Integration - Setup and Deployment"
     echo "==============================================="
     echo "1. Install Prerequisites (Deno)"
     echo "2. Configure Environment Variables"
     echo "3. Setup Database"
-    echo "4. Run Tests"
-    echo "5. Deploy Function"
-    echo "6. Full Setup (Steps 1-5)"
-    echo "7. View Logs"
-    echo "8. Show Webhook URL"
-    echo "9. List Functions and URLs"
-    echo "10. Exit"
+    echo "4. Run All Tests"
+    echo "5. Function Deployment Menu"
+    echo "6. Full Setup (Steps 1-4 + Deploy All)"
+    echo "7. Exit"
     echo "==============================================="
-    read -p "Enter your choice (1-10): " choice
+    read -p "Enter your choice (1-7): " choice
     echo ""
     
     case $choice in
         1) install_prerequisites ;;
         2) configure_env ;;
         3) setup_database ;;
-        4) run_tests ;;
-        5) deploy_function ;;
+        4) run_all_tests ;;
+        5) function_deployment_menu ;;
         6) full_setup ;;
-        7) view_logs ;;
-        8) show_webhook_url ;;
-        9) list_functions ;;
-        10) exit 0 ;;
+        7) exit 0 ;;
         *) print_status "$RED" "Invalid option" ;;
     esac
     
