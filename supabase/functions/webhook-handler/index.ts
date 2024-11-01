@@ -68,10 +68,10 @@ function validateConfig(): void {
     ["FF_JWT_SECRET", config.supabase.jwtSecret],
   ];
 
-  const missing = required.filter(([_, value]) => !value);
-  if (missing.length > 0) {
-    const missingVar = missing[0][0]; // Get first missing variable
-    throw new Error(`Missing required environment variable: ${missingVar}`);
+  for (const [name, value] of required) {
+    if (!value) {
+      throw new Error(`Missing required environment variable: ${name}`);
+    }
   }
 }
 
@@ -210,9 +210,23 @@ async function storeData(data: {
 
 // Main webhook handler
 export async function handler(req: Request): Promise<Response> {
+  // Validate configuration first, before any other operations
   try {
     validateConfig();
+  } catch (error) {
+    return new Response(JSON.stringify({
+      success: false,
+      message: error instanceof Error ? error.message : 'Configuration validation failed',
+    }), {
+      status: 500,
+      headers: {
+        'Content-Type': 'application/json',
+        'Access-Control-Allow-Origin': '*',
+      },
+    });
+  }
 
+  try {
     // Handle CORS preflight
     if (req.method === 'OPTIONS') {
       return new Response(null, {
@@ -291,11 +305,9 @@ export async function handler(req: Request): Promise<Response> {
   } catch (error: unknown) {
     console.error('Error processing webhook:', error);
 
-    const errorMessage = error instanceof Error ? error.message : 'Internal server error';
-
     return new Response(JSON.stringify({
       success: false,
-      message: errorMessage,
+      message: error instanceof Error ? error.message : 'Internal server error',
     }), {
       status: 500,
       headers: {
@@ -306,5 +318,7 @@ export async function handler(req: Request): Promise<Response> {
   }
 }
 
-// Start the server
-Deno.serve(handler);
+// Only start the server if we're not in a test environment
+if (!Deno.env.get("DENO_TEST")) {
+  Deno.serve(handler);
+}
