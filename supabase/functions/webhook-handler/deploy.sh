@@ -8,26 +8,14 @@ ROOT_DIR="$(cd ../.. && pwd)"
 
 echo "Deploying Fireflies Webhook Handler to Supabase..."
 
-# Check if required environment variables are set
-required_vars=(
-    "FIREFLIES_API_KEY"
-    "OPENAI_API_KEY"
-    "SUPABASE_URL"
-    "SUPABASE_ANON_KEY"
-    "SUPABASE_ACCESS_TOKEN"
-    "SUPABASE_PROJECT_REF"
-    "SUPABASE_SERVICE_ROLE_KEY"
-)
-
-for var in "${required_vars[@]}"; do
-    if [ -z "${!var}" ]; then
-        echo "Error: $var environment variable is not set"
-        exit 1
-    fi
-done
+# Check if SUPABASE_PROJECT_REF is set
+if [ -z "$SUPABASE_PROJECT_REF" ]; then
+    echo "Error: SUPABASE_PROJECT_REF environment variable is not set"
+    exit 1
+fi
 
 echo "Running tests..."
-deno test --allow-env --allow-net test.ts
+deno test --allow-env --allow-net --allow-read test.ts
 
 if [ $? -eq 0 ]; then
     echo "Tests passed successfully!"
@@ -40,14 +28,6 @@ echo "Deploying function..."
 cd "$ROOT_DIR"
 npx supabase functions deploy webhook-handler --no-verify-jwt
 
-echo "Setting environment variables..."
-npx supabase secrets set \
-    FF_API_KEY="$FIREFLIES_API_KEY" \
-    OPENAI_API_KEY="$OPENAI_API_KEY" \
-    FF_URL="$SUPABASE_URL" \
-    FF_ANON_KEY="$SUPABASE_ANON_KEY" \
-    FF_SERVICE_ROLE="$SUPABASE_SERVICE_ROLE_KEY"
-
 WEBHOOK_URL="https://$SUPABASE_PROJECT_REF.functions.supabase.co/webhook-handler"
 echo "Deployment complete!"
 echo "Your webhook endpoint is available at: $WEBHOOK_URL"
@@ -55,7 +35,20 @@ echo "Your webhook endpoint is available at: $WEBHOOK_URL"
 echo "Testing deployment..."
 TEST_RESPONSE=$(curl -s -X POST "$WEBHOOK_URL" \
     -H 'Content-Type: application/json' \
-    -d '{"meetingId": "test-meeting-id", "eventType": "Transcription completed"}')
+    -d '{
+      "meetingId": "test-meeting-id",
+      "eventType": "Transcription completed",
+      "transcript": {
+        "sentences": [
+          {
+            "text": "This is a test transcript",
+            "speaker": "Test Speaker",
+            "startTime": 0,
+            "endTime": 5
+          }
+        ]
+      }
+    }')
 
 if [ $? -eq 0 ]; then
     echo "Deployment verified successfully!"
@@ -68,4 +61,17 @@ echo ""
 echo "To test the webhook, you can use curl:"
 echo "curl -X POST $WEBHOOK_URL \\"
 echo "  -H 'Content-Type: application/json' \\"
-echo "  -d '{\"meetingId\": \"your-meeting-id\", \"eventType\": \"Transcription completed\"}'"
+echo '  -d '"'"'{
+    "meetingId": "your-meeting-id",
+    "eventType": "Transcription completed",
+    "transcript": {
+      "sentences": [
+        {
+          "text": "Example transcript text",
+          "speaker": "Speaker Name",
+          "startTime": 0,
+          "endTime": 5
+        }
+      ]
+    }
+  }'"'"

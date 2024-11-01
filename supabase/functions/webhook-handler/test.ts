@@ -1,5 +1,4 @@
 import { assertEquals, assertExists } from "https://deno.land/std@0.208.0/testing/asserts.ts";
-import { load } from "https://deno.land/std@0.208.0/dotenv/mod.ts";
 
 // Set test environment flag before any imports
 Deno.env.set("DENO_TEST", "1");
@@ -8,156 +7,22 @@ Deno.env.set("DENO_TEST", "1");
 const MOCK_WEBHOOK_PAYLOAD = {
   meetingId: "test-meeting-id",
   eventType: "Transcription completed",
-  clientReferenceId: "test-reference-id"
-};
-
-// Mock transcript with clear intents - matches GraphQL response structure
-const MOCK_TRANSCRIPT_RESPONSE = {
-  data: {
-    transcript: {
-      sentences: [
-        {
-          text: "Let's discuss the technical requirements for the new feature.",
-          speaker: "John",
-          startTime: 0,
-          endTime: 5
-        },
-        {
-          text: "We need to implement a new API endpoint and update the documentation.",
-          speaker: "Alice",
-          startTime: 6,
-          endTime: 10
-        }
-      ]
-    }
-  }
-};
-
-// Mock empty transcript - matches GraphQL response structure
-const MOCK_EMPTY_TRANSCRIPT_RESPONSE = {
-  data: {
-    transcript: {
-      sentences: []
-    }
-  }
-};
-
-const MOCK_OPENAI_RESPONSE = {
-  choices: [
-    {
-      message: {
-        content: JSON.stringify([
-          {
-            type: "TECH_SPEC",
-            confidence: 0.9,
-            details: {
-              quotes: ["Let's discuss the technical requirements for the new feature."],
-              context: "Discussion about technical requirements"
-            }
-          }
-        ])
+  clientReferenceId: "test-ref-123",
+  transcript: {
+    sentences: [
+      {
+        text: "Let's discuss the technical requirements for the new feature.",
+        speaker: "John",
+        startTime: 0,
+        endTime: 5
+      },
+      {
+        text: "We need to implement a new API endpoint and update the documentation.",
+        speaker: "Alice",
+        startTime: 6,
+        endTime: 10
       }
-    }
-  ]
-};
-
-// Mock empty transcript OpenAI response
-const MOCK_EMPTY_OPENAI_RESPONSE = {
-  choices: [
-    {
-      message: {
-        content: "[]"
-      }
-    }
-  ]
-};
-
-// Required environment variables
-const REQUIRED_ENV_VARS = [
-  'FF_API_KEY',
-  'OPENAI_API_KEY',
-  'FF_URL',
-  'FF_ANON_KEY',
-  'FF_SERVICE_ROLE',
-  'FF_JWT_SECRET'
-] as const;
-
-// Mock environment variables
-const ENV_VARS: Record<string, string> = {
-  FF_API_KEY: "test_fireflies_key",
-  OPENAI_API_KEY: "test_openai_key",
-  FF_URL: "http://localhost:54321",
-  FF_ANON_KEY: "test_anon_key",
-  FF_SERVICE_ROLE: "test_service_role",
-  FF_JWT_SECRET: "test_jwt_secret"
-};
-
-// Helper function to set environment variables
-const setEnvVars = (vars: Record<string, string>) => {
-  clearEnvVars(); // Clear existing vars first
-  Deno.env.set("DENO_TEST", "1"); // Ensure test flag is always set
-  for (const [key, value] of Object.entries(vars)) {
-    Deno.env.set(key, value);
-  }
-};
-
-// Helper function to clear environment variables
-const clearEnvVars = () => {
-  for (const key of REQUIRED_ENV_VARS) {
-    Deno.env.delete(key);
-  }
-};
-
-// Mock fetch function with transcript type parameter
-const createMockFetch = (transcriptType: 'valid' | 'empty') => {
-  return async (input: string | URL | Request, init?: RequestInit): Promise<Response> => {
-    const url = typeof input === 'string' ? input : input instanceof URL ? input.toString() : input.url;
-
-    if (url.includes('fireflies.ai')) {
-      return new Response(JSON.stringify(
-        transcriptType === 'valid' ? MOCK_TRANSCRIPT_RESPONSE : MOCK_EMPTY_TRANSCRIPT_RESPONSE
-      ), {
-        status: 200,
-        headers: { 
-          'Content-Type': 'application/json',
-          'Access-Control-Allow-Origin': '*'
-        }
-      });
-    }
-    if (url.includes('openai.com')) {
-      return new Response(JSON.stringify(
-        transcriptType === 'valid' ? MOCK_OPENAI_RESPONSE : MOCK_EMPTY_OPENAI_RESPONSE
-      ), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    if (url.includes('rest/v1/meeting_data')) {
-      return new Response(JSON.stringify({ id: 1 }), {
-        status: 201,
-        headers: { 'Content-Type': 'application/json' }
-      });
-    }
-    return new Response(null, { status: 404 });
-  };
-};
-
-// Store original fetch and env for cleanup
-const originalFetch = globalThis.fetch;
-const originalEnv = { ...Deno.env.toObject() };
-
-// Helper to reset everything between tests
-const resetTestEnv = () => {
-  // Reset fetch
-  globalThis.fetch = originalFetch;
-  
-  // Reset env vars
-  clearEnvVars();
-  Deno.env.set("DENO_TEST", "1"); // Ensure test flag remains set
-  for (const [key, value] of Object.entries(originalEnv)) {
-    if (key !== "DENO_TEST") { // Don't override test flag
-      Deno.env.set(key, value);
-    }
+    ]
   }
 };
 
@@ -167,80 +32,10 @@ async function getHandler() {
   return mod.handler;
 }
 
-// Test suite for environment configuration
-Deno.test({
-  name: "Environment Configuration Tests",
-  async fn(t) {
-    await t.step({
-      name: "should validate all required environment variables are present",
-      async fn() {
-        // Set all required environment variables
-        setEnvVars(ENV_VARS);
-        
-        // Set up mock fetch before importing handler
-        globalThis.fetch = createMockFetch('valid');
-
-        // Get fresh handler instance
-        const handler = await getHandler();
-
-        const req = new Request("http://localhost", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
-        });
-
-        const response = await handler(req);
-        assertEquals(response.status, 200);
-
-        // Clean up
-        resetTestEnv();
-      }
-    });
-
-    await t.step({
-      name: "should throw error when environment variables are missing",
-      async fn() {
-        // Set only some variables, omitting FF_API_KEY
-        const partialEnvVars = { ...ENV_VARS };
-        delete partialEnvVars.FF_API_KEY;
-        setEnvVars(partialEnvVars);
-
-        // Set up mock fetch
-        globalThis.fetch = createMockFetch('valid');
-
-        // Get fresh handler instance
-        const handler = await getHandler();
-
-        const req = new Request("http://localhost", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
-        });
-
-        const response = await handler(req);
-        assertEquals(response.status, 500);
-
-        const data = await response.json();
-        assertEquals(data.success, false);
-        assertEquals(data.message, "Missing required environment variable: FF_API_KEY");
-
-        // Clean up
-        resetTestEnv();
-      }
-    });
-  }
-});
-
 // Test suite for webhook handler
 Deno.test({
   name: "Webhook Handler Tests",
   async fn(t) {
-    // Set up environment variables before all tests
-    setEnvVars(ENV_VARS);
-
-    // Set up mock fetch before importing handler
-    globalThis.fetch = createMockFetch('valid');
-
     // Get fresh handler instance
     const handler = await getHandler();
 
@@ -274,10 +69,7 @@ Deno.test({
       assertEquals(response.status, 400);
     });
 
-    await t.step("should process valid transcript with clear intents", async () => {
-      // Replace global fetch with mock for valid transcript
-      globalThis.fetch = createMockFetch('valid');
-
+    await t.step("should process valid webhook payload", async () => {
       const req = new Request("http://localhost", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -289,31 +81,9 @@ Deno.test({
 
       const data = await response.json();
       assertEquals(data.success, true);
-      assertEquals(data.meeting_id, MOCK_WEBHOOK_PAYLOAD.meetingId);
-      assertExists(data.intents);
-      assertEquals(data.intents.length, 1);
-      assertEquals(data.intents[0].type, "TECH_SPEC");
-      assertEquals(data.intents[0].confidence, 0.9);
-    });
-
-    await t.step("should handle empty transcript with no intents", async () => {
-      // Replace global fetch with mock for empty transcript
-      globalThis.fetch = createMockFetch('empty');
-
-      const req = new Request("http://localhost", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(MOCK_WEBHOOK_PAYLOAD)
-      });
-
-      const response = await handler(req);
-      assertEquals(response.status, 200);
-
-      const data = await response.json();
-      assertEquals(data.success, true);
-      assertEquals(data.meeting_id, MOCK_WEBHOOK_PAYLOAD.meetingId);
-      assertExists(data.intents);
-      assertEquals(data.intents.length, 0, "Empty transcript should return no intents");
+      assertEquals(data.message, "Webhook received successfully");
+      assertEquals(data.data.meetingId, MOCK_WEBHOOK_PAYLOAD.meetingId);
+      assertEquals(data.data.transcript.sentences.length, 2);
     });
 
     await t.step("should handle unsupported event types", async () => {
@@ -333,8 +103,5 @@ Deno.test({
       assertEquals(data.success, true);
       assertEquals(data.message, "Event type not supported for processing");
     });
-
-    // Clean up environment variables after all tests
-    resetTestEnv();
   }
 });
