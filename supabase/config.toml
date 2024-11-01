@@ -14,3 +14,6 @@ major_version = 15
 [functions]
 [functions.webhook-handler]
 verify_jwt = false
+
+[functions.intent-detection]
+verify_jwt = false
