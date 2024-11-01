@@ -130,10 +130,36 @@ deploy_meeting_info() {
     print_status "$GREEN" "Meeting info function deployed successfully"
 }
 
+# Function to deploy intent detection
+deploy_intent_detection() {
+    print_status "$YELLOW" "Deploying intent detection function..."
+    verify_prerequisites
+    
+    # Load environment variables first
+    if ! load_env; then
+        return 1
+    fi
+    
+    print_status "$GREEN" "Using project ref: $SUPABASE_PROJECT_REF"
+    
+    cd supabase/functions/intent-detection
+    
+    # Deploy the function
+    if ! ./deploy.sh; then
+        print_status "$RED" "Deployment failed"
+        cd ../../..
+        return 1
+    fi
+    
+    cd ../../..
+    print_status "$GREEN" "Intent detection function deployed successfully"
+}
+
 # Function to deploy all functions
 deploy_all_functions() {
     deploy_webhook || return 1
     deploy_meeting_info || return 1
+    deploy_intent_detection || return 1
 }
 
 # Function to install prerequisites
@@ -216,6 +242,15 @@ run_all_tests() {
     fi
     cd ../../..
     
+    # Run intent detection tests
+    cd supabase/functions/intent-detection
+    if ! deno test --allow-all; then
+        print_status "$RED" "Intent detection tests failed"
+        cd ../../..
+        return 1
+    fi
+    cd ../../..
+    
     print_status "$GREEN" "All tests completed successfully"
 }
 
@@ -233,13 +268,15 @@ view_function_logs() {
     print_status "$YELLOW" "Select function to view logs:"
     echo "1. webhook-handler"
     echo "2. meeting-info"
-    echo "3. Back to main menu"
-    read -p "Enter your choice (1-3): " log_choice
+    echo "3. intent-detection"
+    echo "4. Back to main menu"
+    read -p "Enter your choice (1-4): " log_choice
     
     case $log_choice in
         1) npx supabase functions logs webhook-handler ;;
         2) npx supabase functions logs meeting-info ;;
-        3) return ;;
+        3) npx supabase functions logs intent-detection ;;
+        4) return ;;
         *) print_status "$RED" "Invalid option" ;;
     esac
 }
@@ -257,6 +294,7 @@ show_function_urls() {
     print_status "$GREEN" "Using project ref: $SUPABASE_PROJECT_REF"
     print_status "$GREEN" "Webhook Handler URL: https://$SUPABASE_PROJECT_REF.functions.supabase.co/webhook-handler"
     print_status "$GREEN" "Meeting Info URL: https://$SUPABASE_PROJECT_REF.functions.supabase.co/meeting-info"
+    print_status "$GREEN" "Intent Detection URL: https://$SUPABASE_PROJECT_REF.functions.supabase.co/intent-detection"
 }
 
 # Function to list functions and URLs
@@ -277,6 +315,7 @@ list_functions() {
     print_status "$YELLOW" "\nFunction URLs:"
     print_status "$GREEN" "webhook-handler: https://$SUPABASE_PROJECT_REF.functions.supabase.co/webhook-handler"
     print_status "$GREEN" "meeting-info: https://$SUPABASE_PROJECT_REF.functions.supabase.co/meeting-info"
+    print_status "$GREEN" "intent-detection: https://$SUPABASE_PROJECT_REF.functions.supabase.co/intent-detection"
 }
 
 # Function deployment submenu
@@ -287,23 +326,25 @@ function_deployment_menu() {
         echo "==============================================="
         echo "1. Deploy Webhook Handler"
         echo "2. Deploy Meeting Info"
-        echo "3. Deploy All Functions"
-        echo "4. View Function Logs"
-        echo "5. Show Function URLs"
-        echo "6. List All Functions"
-        echo "7. Back to Main Menu"
+        echo "3. Deploy Intent Detection"
+        echo "4. Deploy All Functions"
+        echo "5. View Function Logs"
+        echo "6. Show Function URLs"
+        echo "7. List All Functions"
+        echo "8. Back to Main Menu"
         echo "==============================================="
-        read -p "Enter your choice (1-7): " deploy_choice
+        read -p "Enter your choice (1-8): " deploy_choice
         echo ""
         
         case $deploy_choice in
             1) deploy_webhook ;;
             2) deploy_meeting_info ;;
-            3) deploy_all_functions ;;
-            4) view_function_logs ;;
-            5) show_function_urls ;;
-            6) list_functions ;;
-            7) return ;;
+            3) deploy_intent_detection ;;
+            4) deploy_all_functions ;;
+            5) view_function_logs ;;
+            6) show_function_urls ;;
+            7) list_functions ;;
+            8) return ;;
             *) print_status "$RED" "Invalid option" ;;
         esac
         
@@ -315,6 +356,7 @@ function_deployment_menu() {
 # Make deploy scripts executable
 chmod +x supabase/functions/webhook-handler/deploy.sh
 chmod +x supabase/functions/meeting-info/deploy.sh
+chmod +x supabase/functions/intent-detection/deploy.sh
 
 # Main menu
 while true; do
